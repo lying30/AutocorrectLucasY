@@ -1,0 +1,26 @@
+Time Complexity
+
+1. Initializing the Data Structures:
+   - Loading Dictionary: O(n log n)
+     - Reading 'n' words from the file: O(n)
+     - Sorting the dictionary: O(n log n)
+
+2. runTest(String typed):
+   - Compares input word against every word in the dictionary.
+   - For each word, calls ed(): O(m * n)
+     where m = length of typed word, n = length of dictionary word
+   - Total: O(d * m * n) where d = number of dictionary words
+
+3. ed(String typed, String word):
+   - Levenshtein Distance through Tabulation
+   - Time: O(m * n)
+   - Space: O(m * n)
+
+4. Sorting the Matches:
+   - O(k log k), where k = number of candidate matches within threshold
+
+5. Binary Search for Exact Matches (in main):
+   - O(log d), where d = number of dictionary words
+
+Overall:
+   - Worst-case per user input: O(d * m * n) for edit distance comparisons
