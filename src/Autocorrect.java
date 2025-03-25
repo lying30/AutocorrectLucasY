@@ -2,7 +2,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Scanner;
 
 /**
  * Autocorrect
@@ -15,12 +17,44 @@ import java.util.Comparator;
 public class Autocorrect {
 
     public static void main(String[] args) {
+        // Load dictionary from "dictionaries/english.txt"
+        String[] words = loadDictionary("large");
+        // Create an Autocorrect instance with threshold 3
         Autocorrect autocorrect = new Autocorrect(words, 3);
         Scanner s = new Scanner(System.in);
-        while(true) {
+
+        System.out.println("Type your words below we will correct them! (type 'exit' to quit)");
+
+        // Continuous loop for user input
+        while (true) {
             System.out.print("Enter a word: ");
-            String typed = s.nextLine();
-            ArrayList<String> toReturn = new ArrayList<>();
+            String typed = s.nextLine().trim();
+
+            if (typed.equals("exit")) {
+                System.out.println("Quitting now.");
+                break;
+            }
+
+            // If it's a valid word in the dictionary, do nothing
+            if (Arrays.binarySearch(words, typed) >= 0) {
+                System.out.println("Word found in the dictionary, looks like you spelled it right!");
+                System.out.println("");
+                continue;
+            }
+
+            // Get suggested matches using runTest
+            String[] suggestions = autocorrect.runTest(typed);
+
+            // Print suggestions or message if none found
+            if (suggestions.length == 0) {
+                System.out.println("No matches found.");
+            } else {
+                System.out.println("Did you mean: ");
+                for (int i = 0; i < Math.min(5, suggestions.length); i++) {
+                    System.out.println(" - " + suggestions[i]);
+                }
+                System.out.println("");
+            }
         }
     }
 
@@ -53,12 +87,14 @@ public class Autocorrect {
                 matches.add(word);
             }
         }
+        // Sort first by edit distance, then alphabetically
         matches.sort(Comparator.comparingInt((String word) -> ed(typed, word)).thenComparing(String::compareTo));
 
         return matches.toArray(new String[0]);
 
     }
 
+    // Computes the Levenshtein edit distance between two words using tabulation.
     public int ed(String typed, String word) {
         if (word.isEmpty()) return -1;
 
@@ -68,6 +104,7 @@ public class Autocorrect {
         int length2 = word.length();
         int[][] matrix = new int[length1 + 1][length2 + 1];
 
+        // Initialize first column and row
         for (int j = 0; j <= length1 ; j++) {
             matrix[j][0] = j;
         }
@@ -75,6 +112,7 @@ public class Autocorrect {
             matrix[0][k] = k;
         }
 
+        // Fill matrix
         for (int j = 1; j <= length1; j++) {
             for (int k = 1; k <= length2; k++) {
                 if (typed.charAt(j-1) == word.charAt(k-1)){
